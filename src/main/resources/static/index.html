@@ -1,0 +1,82 @@
+<html>
+<head>
+    <title>Chat WebSocket</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+        <script type="text/javascript">
+                var stompClient = null;
+                var name = '';
+
+                function updateControls(connected) {
+                    document.getElementById('connect').disabled = connected;
+                    document.getElementById('name').disabled = connected;
+
+                    document.getElementById('disconnect').disabled = !connected;
+                    document.getElementById('send').disabled = !connected;
+                    document.getElementById('message').disabled = !connected;
+                }
+
+                function connect() {
+                    name = document.getElementById('name').value;
+                    if (name === '') {
+                        alert("Name is empty");
+                        return;
+                    }
+
+                    var socket = new SockJS('/chat');
+                    stompClient = Stomp.over(socket);
+                    stompClient.connect({}, function(frame) {
+                        updateControls(true);
+
+                        stompClient.subscribe('/messages', function(message) {
+                            showMessageOutput(JSON.parse(message.body));
+                        });
+                    });
+                }
+
+                function disconnect() {
+                    if(stompClient != null) {
+                        stompClient.disconnect();
+                    }
+                    updateControls(false);
+                }
+
+                function sendMessage() {
+                    var message = document.getElementById('message').value;
+                    stompClient.send("/chat", {},
+                      JSON.stringify({'name':name, 'text':message}));
+                }
+
+                function showMessageOutput(message) {
+                    var wall = document.getElementById('wall');
+                    var p = document.createElement('p');
+                    p.style.wordWrap = 'break-word';
+                    p.appendChild(document.createTextNode(message.name + ": "
+                      + message.text + " (" + message.datetime + ")"));
+                    wall.appendChild(p);
+                }
+            </script>
+</head>
+<body onload="updateControls(false);">
+<div>
+    <div>
+        <input type="text" id="name" placeholder="Choose a nickname"/>
+    </div>
+    <br/>
+    <div>
+        <button id="connect" onclick="connect();">Connect</button>
+        <button id="disconnect" onclick="disconnect();">Disconnect</button>
+    </div>
+    <br/>
+    <div>
+        <input type="text" id="message" placeholder="Write a message..."/>
+        <button id="send" onclick="sendMessage();">Send</button>
+    </div>
+    <br/>
+    <div id='wall'>
+
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,18 @@
+version: '3'
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - 15672:15672
+  websocketchat:
+    build: .
+    image: websocketchat
+    container_name: websocketchat
+    restart: always
+    environment:
+      spring.rabbitmq.addresses: rabbitmq
+    ports:
+      - 8080:8080
+
