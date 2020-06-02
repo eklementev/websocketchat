@@ -2,7 +2,7 @@
 WebSocket chat
 
 ## Build target jar
-`./gradle build`
+`./gradlew build`
 
 ## Run RabbitMQ & WebSocketChat as docker containers
 `docker-compose up -d --build`
